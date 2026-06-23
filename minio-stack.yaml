@@ -1,0 +1,93 @@
+namespace: minio
+
+stack:
+  defines: runnable
+  inherits: minio/base
+
+  metadata:
+    name: MinIO Standalone Stack
+    description: |
+      Production-oriented standalone MinIO deployment with persistent storage,
+      secret-backed root credentials, and authenticated API/console exposure
+      intended for ingress-capable Monk targets. The S3 API is routed at /
+      and the console is routed at /console/. Local targets do not support
+      ingress; use minio/stack-local for localhost verification.
+    tags: minio, s3, object-storage, storage, standalone, production
+    website: https://min.io/
+    source: https://github.com/minio/minio
+    publisher: monk.io
+    icon: https://min.io/resources/img/logo.svg
+    private: false
+
+  variables:
+    minio-storage-name:
+      type: string
+      value: minio-stack
+      description: Monk volume subdirectory used for persistent production MinIO object data.
+  services:
+    api:
+      container: minio
+      port: <- $minio-api-port
+      protocol: tcp
+      description: Authenticated S3-compatible API endpoint intended for production ingress and Monk connections.
+      ingress-routes:
+        api:
+          path-prefix: /
+    console:
+      container: minio
+      port: <- $minio-console-port
+      protocol: tcp
+      description: Authenticated MinIO management console endpoint intended for production ingress.
+      ingress-routes:
+        console:
+          path-prefix: /console/
+          path-rewrite:
+            regex: ^/console/(.*)
+            to: /$1
+
+stack-local:
+  defines: runnable
+  inherits: minio/base
+
+  metadata:
+    name: MinIO Standalone Local Stack
+    description: |
+      Local verification flavor for the standalone MinIO stack. It publishes
+      API and console endpoints on non-privileged localhost ports because
+      ingress is not available on local Monk targets.
+    tags: minio, s3, object-storage, storage, standalone, local
+    website: https://min.io/
+    source: https://github.com/minio/minio
+    publisher: monk.io
+    icon: https://min.io/resources/img/logo.svg
+    private: false
+
+  variables:
+    minio-storage-name:
+      type: string
+      value: minio-stack-local
+      description: Monk volume subdirectory used for persistent MinIO data in the local standalone flavor.
+    minio-api-host-port:
+      type: int
+      value: 19000
+      description: Non-privileged host port published locally for the MinIO S3 API.
+    minio-console-host-port:
+      type: int
+      value: 19001
+      description: Non-privileged host port published locally for the MinIO console.
+
+  services:
+    api:
+      container: minio
+      port: <- $minio-api-port
+      protocol: tcp
+      publish: true
+      host-port: <- $minio-api-host-port
+      description: Published local MinIO S3 API endpoint for standalone verification.
+    console:
+      container: minio
+      port: <- $minio-console-port
+      protocol: tcp
+      publish: true
+      host-port: <- $minio-console-host-port
+      description: Published local authenticated MinIO console endpoint for standalone verification.

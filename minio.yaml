@@ -1,0 +1,81 @@
+namespace: minio
+
+base:
+  defines: runnable
+
+  metadata:
+    name: MinIO
+    description: |
+      Reusable self-contained MinIO S3-compatible object storage component.
+      MinIO does not require an external database or queue. Application stacks
+      can inherit this base or connect to its api service for private object
+      storage. Production inheritors should set plain Monk secrets
+      minio-root-user and minio-root-password.
+    tags: minio, s3, object-storage, storage, component, dependency
+    website: https://min.io/
+    source: https://github.com/minio/minio
+    publisher: monk.io
+    icon: https://min.io/resources/img/logo.svg
+    private: false
+
+  variables:
+    minio-image-tag:
+      type: string
+      value: latest
+      description: Public minio/minio Docker image tag to run.
+    minio-storage-name:
+      type: string
+      value: minio
+      description: Monk volume subdirectory used for persistent MinIO object data.
+    minio-api-port:
+      type: int
+      value: 9000
+      description: MinIO S3 API port inside the container and Monk network.
+    minio-console-port:
+      type: int
+      env: MINIO_CONSOLE_PORT
+      value: 9001
+      description: MinIO management console port inside the container and Monk network.
+    minio-root-user:
+      type: string
+      env: MINIO_ROOT_USER
+      value: <- secret("minio-root-user") random-uuid default
+      description: Sensitive MinIO root access key. Reads plain secret minio-root-user when set; otherwise generates an ephemeral non-default value for local verification. Set this secret when inheriting for production.
+    minio-root-password:
+      type: string
+      env: MINIO_ROOT_PASSWORD
+      value: <- secret("minio-root-password") random-uuid default
+      description: Sensitive MinIO root secret key. Reads plain secret minio-root-password when set; otherwise generates an ephemeral non-default value for local verification. Set this secret when inheriting for production.
+
+  permitted-secrets:
+    minio-root-user: true
+    minio-root-password: true
+
+  containers:
+    minio:
+      image: minio/minio
+      image-tag: <- $minio-image-tag
+      restart: unless-stopped
+      privileged: false
+      paths:
+        - <- `${volume-path}/${minio-storage-name}:/data`
+      bash: minio server /data --address ":9000" --console-address ":$MINIO_CONSOLE_PORT"
+
+  services:
+    api:
+      container: minio
+      port: <- $minio-api-port
+      protocol: tcp
+      description: Private S3-compatible API endpoint for connected Monk workloads.
+    console:
+      container: minio
+      port: <- $minio-console-port
+      protocol: tcp
+      description: Private authenticated MinIO management console endpoint for operators.
+
+  checks:
+    readiness:
+      code: '"http://localhost:9000/minio/health/ready" do-http-head get-member("status") 200 equal?'
+      period: 5
+      initialDelay: 5
+      attempts: 24
