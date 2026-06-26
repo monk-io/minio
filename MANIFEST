@@ -1,0 +1,5 @@
+LOAD minio.yaml
+LOAD minio-example.yaml
+LOAD minio-stack.yaml
+
+ENTRY minio/stack-local

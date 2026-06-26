@@ -1,0 +1,67 @@
+namespace: minio
+
+example-local:
+  defines: runnable
+  inherits: minio/base
+
+  metadata:
+    name: MinIO Local Component Example
+    description: |
+      Example dependency flavor inheriting the reusable MinIO base component.
+      Publishes API and console endpoints on localhost for component smoke
+      testing while keeping credentials generated or secret-backed.
+    tags: minio, s3, object-storage, component, example, local
+    website: https://min.io/
+    source: https://github.com/minio/minio
+    publisher: monk.io
+    icon: https://min.io/resources/img/logo.svg
+    private: false
+
+  variables:
+    minio-storage-name:
+      type: string
+      value: minio-example-local
+      description: Monk volume subdirectory used for persistent MinIO data in the component example.
+    minio-api-host-port:
+      type: int
+      value: 19010
+      description: Non-privileged host port published locally for the MinIO S3 API component example.
+    minio-console-host-port:
+      type: int
+      value: 19011
+      description: Non-privileged host port published locally for the MinIO console component example.
+
+  services:
+    api:
+      container: minio
+      port: <- $minio-api-port
+      protocol: tcp
+      publish: true
+      host-port: <- $minio-api-host-port
+      description: Published local MinIO S3 API endpoint for component verification.
+    console:
+      container: minio
+      port: <- $minio-console-port
+      protocol: tcp
+      publish: true
+      host-port: <- $minio-console-host-port
+      description: Published local authenticated MinIO console endpoint for component verification.
+
+example:
+  defines: process-group
+
+  metadata:
+    name: MinIO Component Example
+    description: |
+      Component example that deploys the reusable MinIO base as a locally
+      reachable dependency for application stacks needing S3-compatible object
+      storage.
+    tags: minio, s3, object-storage, component, example
+    website: https://min.io/
+    source: https://github.com/minio/minio
+    publisher: monk.io
+    icon: https://min.io/resources/img/logo.svg
+    private: false
+
+  runnable-list:
+    - minio/example-local
