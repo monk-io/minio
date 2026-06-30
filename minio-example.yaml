@@ -18,10 +18,6 @@ example-local:
     private: false
 
   variables:
-    minio-storage-name:
-      type: string
-      value: minio-example-local
-      description: Monk volume subdirectory used for persistent MinIO data in the component example.
     minio-api-host-port:
       type: int
       value: 19010
