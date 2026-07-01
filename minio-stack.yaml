@@ -72,13 +72,11 @@ stack-local:
       container: minio
       port: <- $minio-api-port
       protocol: tcp
-      publish: true
       host-port: <- $minio-api-host-port
       description: Published local MinIO S3 API endpoint for standalone verification.
     console:
       container: minio
       port: <- $minio-console-port
       protocol: tcp
-      publish: true
       host-port: <- $minio-console-host-port
       description: Published local authenticated MinIO console endpoint for standalone verification.
