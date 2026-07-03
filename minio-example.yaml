@@ -38,6 +38,7 @@ example-local:
       container: minio
       port: <- $minio-console-port
       protocol: tcp
+      publish: true
       host-port: <- $minio-console-host-port
       description: Published local authenticated MinIO console endpoint for component verification.
 
