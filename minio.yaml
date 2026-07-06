@@ -46,6 +46,10 @@ base:
       env: MINIO_ROOT_PASSWORD
       value: <- secret("minio-root-password") random-uuid default
       description: Sensitive MinIO root secret key. Reads plain secret minio-root-password when set; otherwise generates an ephemeral non-default value for local verification. Set this secret when inheriting for production.
+    self-path:
+      type: string
+      value: <- self-path
+      description: Resolved namespace path of the concrete (possibly inheriting) runnable, used by the readiness probe so it targets the actual running runnable rather than a hard-coded base path.
 
   permitted-secrets:
     minio-root-user: true
@@ -75,7 +79,7 @@ base:
 
   checks:
     readiness:
-      code: '"http://localhost:9000/minio/health/ready" do-http-head get-member("status") 200 equal?'
+      code: http-get-service($self-path, "api", "/minio/health/ready") get-member("status") 200 equal?
       period: 5
       initialDelay: 5
       attempts: 24
