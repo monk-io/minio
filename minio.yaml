@@ -23,10 +23,6 @@ base:
       type: string
       value: latest
       description: Public minio/minio Docker image tag to run.
-    minio-storage-name:
-      type: string
-      value: minio
-      description: Monk volume subdirectory used for persistent MinIO object data.
     minio-api-port:
       type: int
       value: 9000
@@ -61,8 +57,9 @@ base:
       image-tag: <- $minio-image-tag
       restart: unless-stopped
       privileged: false
-      paths:
-        - <- `${volume-path}/${minio-storage-name}:/data`
+      mounted-volumes:
+        minio-data:
+          path: /data
       bash: minio server /data --address ":9000" --console-address ":$MINIO_CONSOLE_PORT"
 
   services:
@@ -76,6 +73,10 @@ base:
       port: <- $minio-console-port
       protocol: tcp
       description: Private authenticated MinIO management console endpoint for operators.
+
+  volumes:
+    minio-data:
+      kind: local
 
   checks:
     readiness:

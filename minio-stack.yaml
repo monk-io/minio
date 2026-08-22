@@ -19,11 +19,6 @@ stack:
     icon: https://min.io/resources/img/logo.svg
     private: false
 
-  variables:
-    minio-storage-name:
-      type: string
-      value: minio-stack
-      description: Monk volume subdirectory used for persistent production MinIO object data.
   services:
     api:
       container: minio
@@ -63,10 +58,6 @@ stack-local:
     private: false
 
   variables:
-    minio-storage-name:
-      type: string
-      value: minio-stack-local
-      description: Monk volume subdirectory used for persistent MinIO data in the local standalone flavor.
     minio-api-host-port:
       type: int
       value: 19000
@@ -81,7 +72,6 @@ stack-local:
       container: minio
       port: <- $minio-api-port
       protocol: tcp
-      publish: true
       host-port: <- $minio-api-host-port
       description: Published local MinIO S3 API endpoint for standalone verification.
     console:
