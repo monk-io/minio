@@ -22,7 +22,7 @@ base:
     minio-image-tag:
       type: string
       value: latest
-      description: Public minio/minio Docker image tag to run.
+      description: Public quay.io/minio/minio image tag to run. Docker Hub's minio/* namespace no longer permits anonymous pulls, so the community images are read from quay.io.
     minio-storage-name:
       type: string
       value: minio
@@ -57,7 +57,7 @@ base:
 
   containers:
     minio:
-      image: minio/minio
+      image: quay.io/minio/minio
       image-tag: <- $minio-image-tag
       restart: unless-stopped
       privileged: false
